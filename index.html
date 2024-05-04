@@ -5,43 +5,74 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
         #map {
-            height: 400px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+        #console-log {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <div id="pin-data" data-json=""></div>
     <div id="map"></div>
+    <div id="console-log">Log</div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        // Import the Leaflet library
-import L from 'leaflet';
+        function log(message) {
+            console.log(message);
 
-// Initialize the map
-var map = L.map('map').setView([0, 0], 2); // Set initial view to world map
-
-// Set up the OSM layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-    maxZoom: 18,
-}).addTo(map);
-
-// Fetch the JSON data
-fetch('products/pins_to_show.json')
-    .then(response => response.json())
-    .then(data => {
-        // Iterate over the entries in the JSON data
-        for (let entry of data) {
-            // Create a marker for each location
-            var marker = L.marker([entry.coordinates.coordinates[1], entry.coordinates.coordinates[0]]).addTo(map);
-
-            // Create a popup for each marker with the data as a location card
-            marker.bindPopup(`
-                <h2>${entry.place_name}</h2>
-                <p>${entry.coordinates.coordinates[0]}</p>
-            `);
+            var logDiv = document.getElementById('console-log');
+            var messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            logDiv.appendChild(messageDiv);
         }
-    });
+        log("Log loaded...");
+        
+        window.onload = function() {
+            fetch('products/pins_to_show.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    log("Data loaded...")
+                    for (let entry of data) {
+                        if (entry.coordinates) {
+                            log(entry.place_name)
+                            // Create a marker for each location
+                            var marker = L.marker(entry.coordinates.coordinates).addTo(map);
+
+                            // Create a popup for each marker with the data as a location card
+                            marker.bindPopup(`
+                                <h2>${entry.place_name}</h2>
+                                <img src="${entry.image_src}" alt="${entry.place_name}" style="width: 100px; height: 100px;">
+                                <p>${entry.location}</p>
+                                <p>${entry.coordinates.coordinates}</p>
+                            `);
+                        }
+                    }
+                })
+                .catch(error => {
+                    log("Error loading data...");
+                    log(error);
+                });
+            }
+                
+        // Initialize the map
+        var map = L.map('map').setView([0, 0], 2); // Set initial view to world map
+
+        // Set up the OSM layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            maxZoom: 18,
+        }).addTo(map);
     </script>
 </body>
 </html>
