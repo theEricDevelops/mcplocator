@@ -105,9 +105,12 @@ with open('products/raw_data/imported_products.json') as f:
 
 # Extract the required fields
 extracted_data = []
+manually_process = []
 for entry in data:
     if entry.get('instore_product_type') == 'pin':
         total_pins += 1
+        manual_process = False
+
         name = description = instore_id = image_src = place_name = elevation = location = latitude = longitude = coordinates = ''
 
         name = entry.get('name')
@@ -170,6 +173,7 @@ for entry in data:
                 Description: {description}
             """)
             total_errs += 1
+            manual_process = True
             pass
 
         if not coordinates:
@@ -182,21 +186,38 @@ for entry in data:
             #if not coordinates:
                 logger.warning(f'Warning: {name} does not have coordinates\nDescription: {description}')
                 total_warn += 1
+                manual_process = True
                 pass
-
-        extracted_data.append({
-            'name': name,
-            'place_name': place_name,
-            'elevation': elevation,
-            'coordinates': coordinates,
-            'location': location,
-            'instore_id': instore_id,
-            'image_src': image_src
-        })
+        
+        if manual_process:
+            manually_process.append({
+                'name': name,
+                'instore_id': instore_id,
+                'image_src': image_src,
+                'place_name': place_name,
+                'elevation': elevation,
+                'location': location,
+                'coordinates': "",
+                'description': description
+            })
+        else:
+            extracted_data.append({
+                'name': name,
+                'instore_id': instore_id,
+                'image_src': image_src,
+                'place_name': place_name,
+                'elevation': elevation,
+                'location': location,
+                'coordinates': coordinates
+            })
 
 # Save the extracted data to a new JSON file
 with open('products/extracted_pins.json', 'w') as f:
     json.dump(extracted_data, f)
+
+with open('products/manually_process.json', 'w') as f:
+    json.dump(manually_process, f)
+
 
 print(f"Total pins: {total_pins}")
 print(f"Total errs: {total_errs}")
