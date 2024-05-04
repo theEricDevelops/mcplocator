@@ -1,10 +1,10 @@
 {
-  "name": "app-service-hello-world",
-  "description": "Simple Hello World Node.js sample for Azure App Service",
-  "version": "0.0.1",
+  "name": "mcplocator",
+  "description": "A map of mountainclimb.com pin locations.",
+  "version": "0.1.0",
   "private": true,
   "license": "MIT",
-  "author": "Microsoft",
+  "author": "EricDevelops",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon -e js,html ./index.js"
