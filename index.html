@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Import the Leaflet library
+import L from 'leaflet';
+
+// Initialize the map
+var map = L.map('map').setView([0, 0], 2); // Set initial view to world map
+
+// Set up the OSM layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+    maxZoom: 18,
+}).addTo(map);
+
+// Fetch the JSON data
+fetch('products/pins_to_show.json')
+    .then(response => response.json())
+    .then(data => {
+        // Iterate over the entries in the JSON data
+        for (let entry of data) {
+            // Create a marker for each location
+            var marker = L.marker([entry.coordinates.coordinates[1], entry.coordinates.coordinates[0]]).addTo(map);
+
+            // Create a popup for each marker with the data as a location card
+            marker.bindPopup(`
+                <h2>${entry.place_name}</h2>
+                <p>${entry.coordinates.coordinates[0]}</p>
+            `);
+        }
+    });
+    </script>
+</body>
+</html>
